@@ -150,7 +150,7 @@ public class CipherRequestModel
 
     private CipherLoginData ToCipherLoginData()
     {
-        return new CipherLoginData
+        CipherLoginData ret = new CipherLoginData
         {
             Name = Name,
             Notes = Notes,
@@ -158,7 +158,7 @@ public class CipherRequestModel
             PasswordHistory = PasswordHistory?.Select(ph => ph.ToCipherPasswordHistoryData()),
 
             Uris =
-                Login.Uris?.Where(u => u != null)
+                Login.Uris?.Where(u => u.Uri != null)
                     .Select(u => u.ToCipherLoginUriData()),
             Username = Login.Username,
             Password = Login.Password,
@@ -166,6 +166,12 @@ public class CipherRequestModel
             Totp = Login.Totp,
             AutofillOnPageLoad = Login.AutofillOnPageLoad,
         };
+        if (!ret.Uris.Any())
+        {
+            ret.Uris = null;
+        }
+
+        return ret;
     }
 
     private CipherIdentityData ToCipherIdentityData()
