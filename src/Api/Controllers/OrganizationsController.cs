@@ -539,11 +539,14 @@ public class OrganizationsController : Controller
 
         if (model.Type == OrganizationApiKeyType.BillingSync || model.Type == OrganizationApiKeyType.Scim)
         {
-            // Non-enterprise orgs should not be able to create or view an apikey of billing sync/scim key types
-            var plan = StaticStore.GetPasswordManagerPlan(organization.PlanType);
-            if (plan.Product != ProductType.Enterprise)
+            if (organization.PlanType != PlanType.Custom) 
             {
-                throw new NotFoundException();
+                // Non-enterprise orgs should not be able to create or view an apikey of billing sync/scim key types
+                var plan = StaticStore.GetPasswordManagerPlan(organization.PlanType);
+                if (plan.Product != ProductType.Enterprise)
+                {
+                    throw new NotFoundException();
+                }
             }
         }
 
