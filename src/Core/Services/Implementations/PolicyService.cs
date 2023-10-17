@@ -52,7 +52,7 @@ public class PolicyService : IPolicyService
 
         if (!org.UsePolicies)
         {
-            throw new BadRequestException("This organization cannot use policies.");
+            throw new BadRequestException(ErrorCodes.OrganizationCannotUsePolicies);
         }
 
         // Handle dependent policy checks
@@ -287,7 +287,7 @@ public class PolicyService : IPolicyService
         var ssoConfig = await _ssoConfigRepository.GetByOrganizationIdAsync(org.Id);
         if (ssoConfig?.GetData()?.MemberDecryptionType == MemberDecryptionType.TrustedDeviceEncryption)
         {
-            throw new BadRequestException("Trusted device encryption is on and requires this policy.");
+            throw new BadRequestException(ErrorCodes.PolicyRequiredByTrustedDeviceEncryption);
         }
     }
 }
