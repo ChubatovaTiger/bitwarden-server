@@ -19,6 +19,7 @@ public class Cipher : ITableObject<Guid>, ICloneable
     public string Attachments { get; set; }
     public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     public DateTime RevisionDate { get; set; } = DateTime.UtcNow;
+    public DateTime? ArchivedDate { get; set; } = null;
     public DateTime? DeletedDate { get; set; }
     public Enums.CipherRepromptType? Reprompt { get; set; }
     public string Key { get; set; }
@@ -108,6 +109,7 @@ public class Cipher : ITableObject<Guid>, ICloneable
         var clone = CoreHelpers.CloneObject(this);
         clone.CreationDate = CreationDate;
         clone.RevisionDate = RevisionDate;
+        clone.ArchivedDate = ArchivedDate;
 
         return clone;
     }

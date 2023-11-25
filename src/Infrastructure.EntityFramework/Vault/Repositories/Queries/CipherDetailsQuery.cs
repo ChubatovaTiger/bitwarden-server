@@ -27,6 +27,7 @@ public class CipherDetailsQuery : IQuery<CipherDetails>
                         Attachments = c.Attachments,
                         CreationDate = c.CreationDate,
                         RevisionDate = c.RevisionDate,
+                        ArchivedDate = c.ArchivedDate,
                         DeletedDate = c.DeletedDate,
                         Reprompt = c.Reprompt,
                         Key = c.Key,

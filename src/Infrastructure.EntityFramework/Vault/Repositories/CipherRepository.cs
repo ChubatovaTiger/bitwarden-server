@@ -369,6 +369,7 @@ public class CipherRepository : Repository<Core.Vault.Entities.Cipher, Cipher, G
                                         Attachments = c.Attachments,
                                         CreationDate = c.CreationDate,
                                         RevisionDate = c.RevisionDate,
+                                        ArchivedDate = c.ArchivedDate,
                                         DeletedDate = c.DeletedDate,
                                         Favorite = c.Favorite,
                                         FolderId = c.FolderId,
@@ -601,6 +602,7 @@ public class CipherRepository : Repository<Core.Vault.Entities.Cipher, Cipher, G
             trackedCipher.Data = cipher.Data;
             trackedCipher.Attachments = cipher.Attachments;
             trackedCipher.RevisionDate = cipher.RevisionDate;
+            trackedCipher.ArchivedDate = cipher.ArchivedDate;
             trackedCipher.DeletedDate = cipher.DeletedDate;
             trackedCipher.Key = cipher.Key;
 
@@ -789,7 +791,7 @@ public class CipherRepository : Repository<Core.Vault.Entities.Cipher, Cipher, G
         }
     }
 
-    public async Task UpdatePartialAsync(Guid id, Guid userId, Guid? folderId, bool favorite)
+    public async Task UpdatePartialAsync(Guid id, Guid userId, Guid? folderId, bool favorite, DateTime? archivedDate)
     {
         using (var scope = ServiceScopeFactory.CreateScope())
         {
