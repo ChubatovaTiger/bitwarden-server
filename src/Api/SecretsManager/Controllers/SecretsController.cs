@@ -33,6 +33,7 @@ public class SecretsController : Controller
     private readonly IEventService _eventService;
     private readonly IReferenceEventService _referenceEventService;
     private readonly IAuthorizationService _authorizationService;
+    private readonly IMoveSecretsCommand _moveSecretsCommand;
 
     public SecretsController(
         ICurrentContext currentContext,
@@ -45,7 +46,8 @@ public class SecretsController : Controller
         IUserService userService,
         IEventService eventService,
         IReferenceEventService referenceEventService,
-        IAuthorizationService authorizationService)
+        IAuthorizationService authorizationService,
+        IMoveSecretsCommand moveSecretsCommand)
     {
         _currentContext = currentContext;
         _projectRepository = projectRepository;
@@ -58,7 +60,7 @@ public class SecretsController : Controller
         _eventService = eventService;
         _referenceEventService = referenceEventService;
         _authorizationService = authorizationService;
-
+        _moveSecretsCommand = moveSecretsCommand;
     }
 
     [HttpGet("organizations/{organizationId}/secrets")]
@@ -245,5 +247,35 @@ public class SecretsController : Controller
 
         var responses = secrets.Select(s => new BaseSecretResponseModel(s));
         return new ListResponseModel<BaseSecretResponseModel>(responses);
+    }
+
+    [HttpPost("organizations/{organizationId}/secrets/move")]
+    public async Task BulkMoveToProjectAsync(Guid organizationId, [FromBody] BulkMoveToProjectsRequestModel request)
+    {
+        // Get and validate the target project first since it will get a single item and fail if wrong
+        // vs getting n number of secrets first and having that fail.
+        var project = await _projectRepository.GetByIdAsync(request.Project);
+        var authorizationResult = await _authorizationService.AuthorizeAsync(User, project, ProjectOperations.Update);
+
+        if (!authorizationResult.Succeeded)
+        {
+            throw new NotFoundException();
+        }
+
+        var secrets = (await _secretRepository.GetManyByIds(request.Secrets)).ToList();
+        if (!secrets.Any() || secrets.Count != request.Secrets.Count)
+        {
+            throw new NotFoundException();
+        }
+
+        authorizationResult = await _authorizationService.AuthorizeAsync(
+            User, secrets.AsReadOnly(), BulkSecretOperations.Update);
+
+        if (!authorizationResult.Succeeded)
+        {
+            throw new NotFoundException();
+        }
+
+        await _moveSecretsCommand.MoveSecretsAsync(secrets, request.Project);
     }
 }

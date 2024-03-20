@@ -79,6 +79,11 @@ public class NoopSecretRepository : ISecretRepository
         return Task.FromResult((false, false));
     }
 
+    public Task<Dictionary<Guid, (bool Read, bool Write)>> AccessToSecretsAsync(IEnumerable<Guid> secretIds, Guid userId, AccessClientType accessType)
+    {
+        return Task.FromResult(new Dictionary<Guid, (bool Read, bool Write)>());
+    }
+
     public Task EmptyTrash(DateTime nowTime, uint deleteAfterThisNumberOfDays)
     {
         return Task.FromResult(0);
@@ -87,5 +92,10 @@ public class NoopSecretRepository : ISecretRepository
     public Task<int> GetSecretsCountByOrganizationIdAsync(Guid organizationId)
     {
         return Task.FromResult(0);
+    }
+
+    public Task MoveSecretsAsync(IEnumerable<Secret> secrets, Guid projectIds)
+    {
+        return Task.CompletedTask;
     }
 }

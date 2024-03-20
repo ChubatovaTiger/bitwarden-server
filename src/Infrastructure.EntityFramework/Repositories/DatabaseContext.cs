@@ -65,6 +65,7 @@ public class DatabaseContext : DbContext
     public DbSet<AuthRequest> AuthRequests { get; set; }
     public DbSet<OrganizationDomain> OrganizationDomains { get; set; }
     public DbSet<WebAuthnCredential> WebAuthnCredentials { get; set; }
+    public DbSet<ProjectSecret> ProjectSecrets { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
