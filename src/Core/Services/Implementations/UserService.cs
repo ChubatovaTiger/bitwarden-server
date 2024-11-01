@@ -32,6 +32,8 @@ using Microsoft.Extensions.Options;
 using File = System.IO.File;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
+#nullable enable
+
 namespace Bit.Core.Services;
 
 public class UserService : UserManager<User>, IUserService, IDisposable
@@ -154,9 +156,9 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         return userIdGuid;
     }
 
-    public async Task<User> GetUserByIdAsync(string userId)
+    public async Task<User?> GetUserByIdAsync(string userId)
     {
-        if (_currentContext?.User != null &&
+        if (_currentContext.User != null &&
             string.Equals(_currentContext.User.Id.ToString(), userId, StringComparison.InvariantCultureIgnoreCase))
         {
             return _currentContext.User;
@@ -171,9 +173,9 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         return _currentContext.User;
     }
 
-    public async Task<User> GetUserByIdAsync(Guid userId)
+    public async Task<User?> GetUserByIdAsync(Guid userId)
     {
-        if (_currentContext?.User != null && _currentContext.User.Id == userId)
+        if (_currentContext.User != null && _currentContext.User.Id == userId)
         {
             return _currentContext.User;
         }
@@ -182,7 +184,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         return _currentContext.User;
     }
 
-    public async Task<User> GetUserByPrincipalAsync(ClaimsPrincipal principal)
+    public async Task<User?> GetUserByPrincipalAsync(ClaimsPrincipal principal)
     {
         var userId = GetProperUserId(principal);
         if (!userId.HasValue)
@@ -409,12 +411,12 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         var keyId = $"Key{id}";
 
         var provider = user.GetTwoFactorProvider(TwoFactorProviderType.WebAuthn);
-        if (!provider?.MetaData?.ContainsKey("pending") ?? true)
+        if (provider is not { MetaData: var metadata } || !metadata.TryGetValue("pending", out var isPending))
         {
             return false;
         }
 
-        var options = CredentialCreateOptions.FromJson((string)provider.MetaData["pending"]);
+        var options = CredentialCreateOptions.FromJson((string)isPending);
 
         // Callback to ensure credential ID is unique. Always return true since we don't care if another
         // account uses the same 2FA key.
@@ -426,7 +428,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         provider.MetaData[keyId] = new TwoFactorProvider.WebAuthnData
         {
             Name = name,
-            Descriptor = new PublicKeyCredentialDescriptor(success.Result.CredentialId),
+            Descriptor = new PublicKeyCredentialDescriptor(success.Result!.CredentialId),
             PublicKey = success.Result.PublicKey,
             UserHandle = success.Result.User.Id,
             SignatureCounter = success.Result.Counter,
@@ -436,7 +438,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         };
 
         var providers = user.GetTwoFactorProviders();
-        providers[TwoFactorProviderType.WebAuthn] = provider;
+        providers![TwoFactorProviderType.WebAuthn] = provider;
         user.SetTwoFactorProviders(providers);
         await UpdateTwoFactorProviderAsync(user, TwoFactorProviderType.WebAuthn);
 
@@ -453,12 +455,12 @@ public class UserService : UserManager<User>, IUserService, IDisposable
 
         var keyName = $"Key{id}";
         var provider = user.GetTwoFactorProvider(TwoFactorProviderType.WebAuthn);
-        if (!provider?.MetaData?.ContainsKey(keyName) ?? true)
+        if (provider is not { MetaData: var metadata } || !metadata.ContainsKey(keyName))
         {
             return false;
         }
 
-        if (provider.MetaData.Count < 2)
+        if (metadata.Count < 2)
         {
             return false;
         }
@@ -497,7 +499,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
     public async Task<IdentityResult> ChangeEmailAsync(User user, string masterPassword, string newEmail,
         string newMasterPassword, string token, string key)
     {
-        var verifyPasswordResult = _passwordHasher.VerifyHashedPassword(user, user.MasterPassword, masterPassword);
+        var verifyPasswordResult = _passwordHasher.VerifyHashedPassword(user, user.MasterPassword!, masterPassword);
         if (verifyPasswordResult == PasswordVerificationResult.Failed)
         {
             return IdentityResult.Failed(_identityErrorDescriber.PasswordMismatch());
@@ -543,8 +545,8 @@ public class UserService : UserManager<User>, IUserService, IDisposable
 
             try
             {
-                await _stripeSyncService.UpdateCustomerEmailAddress(user.GatewayCustomerId,
-                    user.BillingEmailAddress());
+                await _stripeSyncService.UpdateCustomerEmailAddress(user.GatewayCustomerId!,
+                    user.BillingEmailAddress()!);
             }
             catch (Exception ex)
             {
@@ -639,7 +641,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         return IdentityResult.Success;
     }
 
-    private IdentityResult CheckCanUseKeyConnector(User user)
+    private IdentityResult? CheckCanUseKeyConnector(User user)
     {
         if (user == null)
         {
@@ -731,7 +733,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         user.Key = key;
 
         await _userRepository.ReplaceAsync(user);
-        await _mailService.SendAdminResetPasswordEmailAsync(user.Email, user.Name, org.DisplayName());
+        await _mailService.SendAdminResetPasswordEmailAsync(user.Email, user.Name!, org.DisplayName());
         await _eventService.LogOrganizationUserEventAsync(orgUser, EventType.OrganizationUser_AdminResetPassword);
         await _pushService.PushLogOutAsync(user.Id);
 
@@ -757,7 +759,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         user.MasterPasswordHint = hint;
 
         await _userRepository.ReplaceAsync(user);
-        await _mailService.SendUpdatedTempPasswordEmailAsync(user.Email, user.Name);
+        await _mailService.SendUpdatedTempPasswordEmailAsync(user.Email, user.Name!);
         await _eventService.LogUserEventAsync(user.Id, EventType.User_UpdatedTempPassword);
         await _pushService.PushLogOutAsync(user.Id);
 
@@ -834,7 +836,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
     public async Task DisableTwoFactorProviderAsync(User user, TwoFactorProviderType type)
     {
         var providers = user.GetTwoFactorProviders();
-        if (!providers?.ContainsKey(type) ?? true)
+        if (providers == null || !providers.ContainsKey(type))
         {
             return;
         }
@@ -879,7 +881,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         return true;
     }
 
-    public async Task<Tuple<bool, string>> SignUpPremiumAsync(User user, string paymentToken,
+    public async Task<Tuple<bool, string?>> SignUpPremiumAsync(User user, string paymentToken,
         PaymentMethodType paymentMethodType, short additionalStorageGb, UserLicense license,
         TaxInfo taxInfo)
     {
@@ -893,8 +895,8 @@ public class UserService : UserManager<User>, IUserService, IDisposable
             throw new BadRequestException("You can't subtract storage!");
         }
 
-        string paymentIntentClientSecret = null;
-        IPaymentService paymentService = null;
+        string? paymentIntentClientSecret = null;
+        IPaymentService? paymentService = null;
         if (_globalSettings.SelfHosted)
         {
             if (license == null || !_licenseService.VerifyLicense(license))
@@ -956,10 +958,11 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         }
         catch when (!_globalSettings.SelfHosted)
         {
+            // This is an actual problem, paymentService is never assigned a value
             await paymentService.CancelAndRecoverChargesAsync(user);
             throw;
         }
-        return new Tuple<bool, string>(string.IsNullOrWhiteSpace(paymentIntentClientSecret),
+        return new Tuple<bool, string?>(string.IsNullOrWhiteSpace(paymentIntentClientSecret),
             paymentIntentClientSecret);
     }
 
@@ -1066,7 +1069,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         await EnablePremiumAsync(user, expirationDate);
     }
 
-    public async Task EnablePremiumAsync(User user, DateTime? expirationDate)
+    public async Task EnablePremiumAsync(User? user, DateTime? expirationDate)
     {
         if (user != null && !user.Premium && user.Gateway.HasValue)
         {
@@ -1083,7 +1086,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         await DisablePremiumAsync(user, expirationDate);
     }
 
-    public async Task DisablePremiumAsync(User user, DateTime? expirationDate)
+    public async Task DisablePremiumAsync(User? user, DateTime? expirationDate)
     {
         if (user != null && user.Premium)
         {
@@ -1105,7 +1108,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
         }
     }
 
-    public async Task<UserLicense> GenerateLicenseAsync(User user, SubscriptionInfo subscriptionInfo = null,
+    public async Task<UserLicense> GenerateLicenseAsync(User user, SubscriptionInfo? subscriptionInfo = null,
         int? version = null)
     {
         if (user == null)
@@ -1129,7 +1132,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
             return false;
         }
 
-        var result = await base.VerifyPasswordAsync(Store as IUserPasswordStore<User>, user, password);
+        var result = await base.VerifyPasswordAsync((IUserPasswordStore<User>)Store, user, password);
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
             await UpdatePasswordHash(user, password, false, false);
@@ -1318,14 +1321,14 @@ public class UserService : UserManager<User>, IUserService, IDisposable
     public void SetTwoFactorProvider(User user, TwoFactorProviderType type, bool setEnabled = true)
     {
         var providers = user.GetTwoFactorProviders();
-        if (!providers?.ContainsKey(type) ?? true)
+        if (providers == null || !providers.TryGetValue(type, out var provider))
         {
             return;
         }
 
         if (setEnabled)
         {
-            providers[type].Enabled = true;
+            provider.Enabled = true;
         }
         user.SetTwoFactorProviders(providers);
 
@@ -1344,7 +1347,7 @@ public class UserService : UserManager<User>, IUserService, IDisposable
             await _removeOrganizationUserCommand.RemoveUserAsync(p.OrganizationId, user.Id);
             var organization = await _organizationRepository.GetByIdAsync(p.OrganizationId);
             await _mailService.SendOrganizationUserRemovedForPolicyTwoStepEmailAsync(
-                organization.DisplayName(), user.Email);
+                organization!.DisplayName(), user.Email);
         }).ToArray();
 
         await Task.WhenAll(removeOrgUserTasks);
