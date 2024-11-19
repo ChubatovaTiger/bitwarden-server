@@ -18,6 +18,9 @@
     <Folder Include="Billing\Controllers\" />
     <Folder Include="Billing\Models\" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
+  </ItemGroup>
 
   <Choose>
     <When Condition="!$(DefineConstants.Contains('OSS'))">
