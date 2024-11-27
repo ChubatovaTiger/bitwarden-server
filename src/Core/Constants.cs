@@ -155,6 +155,7 @@ public static class FeatureFlagKeys
     public const string SecurityTasks = "security-tasks";
     public const string PM14401_ScaleMSPOnClientOrganizationUpdate = "PM-14401-scale-msp-on-client-organization-update";
     public const string DisableFreeFamiliesSponsorship = "PM-12274-disable-free-families-sponsorship";
+    public const string PrivateKeyRegeneration = "pm-12241-private-key-regeneration";
 
     public static List<string> GetAllKeys()
     {
