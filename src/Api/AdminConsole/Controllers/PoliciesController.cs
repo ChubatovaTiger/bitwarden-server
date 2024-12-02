@@ -27,19 +27,19 @@ namespace Bit.Api.AdminConsole.Controllers;
 [Authorize("Application")]
 public class PoliciesController : Controller
 {
+    private readonly ICurrentContext _currentContext;
+    private readonly IFeatureService _featureService;
+    private readonly GlobalSettings _globalSettings;
+    private readonly IOrganizationHasVerifiedDomainsQuery _organizationHasVerifiedDomainsQuery;
+    private readonly IOrganizationRepository _organizationRepository;
+    private readonly IDataProtector _organizationServiceDataProtector;
+    private readonly IOrganizationUserRepository _organizationUserRepository;
+    private readonly IDataProtectorTokenFactory<OrgUserInviteTokenable> _orgUserInviteTokenDataFactory;
     private readonly IPolicyRepository _policyRepository;
     private readonly IPolicyService _policyService;
-    private readonly IOrganizationUserRepository _organizationUserRepository;
     private readonly IUserService _userService;
-    private readonly ICurrentContext _currentContext;
-    private readonly GlobalSettings _globalSettings;
-    private readonly IDataProtector _organizationServiceDataProtector;
-    private readonly IDataProtectorTokenFactory<OrgUserInviteTokenable> _orgUserInviteTokenDataFactory;
-    private readonly IFeatureService _featureService;
-    private readonly IOrganizationHasVerifiedDomainsQuery _organizationHasVerifiedDomainsQuery;
 
-    public PoliciesController(
-        IPolicyRepository policyRepository,
+    public PoliciesController(IPolicyRepository policyRepository,
         IPolicyService policyService,
         IOrganizationUserRepository organizationUserRepository,
         IUserService userService,
@@ -48,7 +48,8 @@ public class PoliciesController : Controller
         IDataProtectionProvider dataProtectionProvider,
         IDataProtectorTokenFactory<OrgUserInviteTokenable> orgUserInviteTokenDataFactory,
         IFeatureService featureService,
-        IOrganizationHasVerifiedDomainsQuery organizationHasVerifiedDomainsQuery)
+        IOrganizationHasVerifiedDomainsQuery organizationHasVerifiedDomainsQuery,
+        IOrganizationRepository organizationRepository)
     {
         _policyRepository = policyRepository;
         _policyService = policyService;
@@ -58,7 +59,7 @@ public class PoliciesController : Controller
         _globalSettings = globalSettings;
         _organizationServiceDataProtector = dataProtectionProvider.CreateProtector(
             "OrganizationServiceDataProtector");
-
+        _organizationRepository = organizationRepository;
         _orgUserInviteTokenDataFactory = orgUserInviteTokenDataFactory;
         _featureService = featureService;
         _organizationHasVerifiedDomainsQuery = organizationHasVerifiedDomainsQuery;
@@ -104,6 +105,13 @@ public class PoliciesController : Controller
     public async Task<ListResponseModel<PolicyResponseModel>> GetByToken(Guid orgId, [FromQuery] string email,
         [FromQuery] string token, [FromQuery] Guid organizationUserId)
     {
+        var organization = await _organizationRepository.GetByIdAsync(orgId);
+
+        if (organization is not { UsePolicies: true })
+        {
+            throw new NotFoundException();
+        }
+
         // TODO: PM-4142 - remove old token validation logic once 3 releases of backwards compatibility are complete
         var newTokenValid = OrgUserInviteTokenable.ValidateOrgUserInviteStringToken(
             _orgUserInviteTokenDataFactory, token, organizationUserId, email);
@@ -158,6 +166,13 @@ public class PoliciesController : Controller
     [HttpGet("master-password")]
     public async Task<PolicyResponseModel> GetMasterPasswordPolicy(Guid orgId)
     {
+        var organization = await _organizationRepository.GetByIdAsync(orgId);
+
+        if (organization is not { UsePolicies: true })
+        {
+            throw new NotFoundException();
+        }
+
         var userId = _userService.GetProperUserId(User).Value;
 
         var orgUser = await _organizationUserRepository.GetByOrganizationAsync(orgId, userId);
