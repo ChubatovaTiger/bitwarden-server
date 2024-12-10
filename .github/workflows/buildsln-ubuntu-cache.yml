@@ -1,4 +1,4 @@
-name: buildsln-windows-cache
+name: buildsln-ubuntu-cache
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   buildsln:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
