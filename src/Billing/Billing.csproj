@@ -4,7 +4,9 @@
     <UserSecretsId>bitwarden-Billing</UserSecretsId>
     <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Billing' " />
   <ItemGroup>
     <ProjectReference Include="..\SharedWeb\SharedWeb.csproj" />

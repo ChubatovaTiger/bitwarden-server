@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Infrastructure.Dapper\Infrastructure.Dapper.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />

@@ -3,7 +3,9 @@
   <PropertyGroup>
     <UserSecretsId>9f1cd3e0-70f2-4921-8068-b2538fd7c3f7</UserSecretsId>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Core.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.EntityFramework\Infrastructure.EntityFramework.csproj" />

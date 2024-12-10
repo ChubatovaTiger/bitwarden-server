@@ -3,7 +3,9 @@
   <PropertyGroup>
     <UserSecretsId>bitwarden-EventsProcessor</UserSecretsId>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'EventsProcessor' " />
   <ItemGroup>
     <ProjectReference Include="..\SharedWeb\SharedWeb.csproj" />

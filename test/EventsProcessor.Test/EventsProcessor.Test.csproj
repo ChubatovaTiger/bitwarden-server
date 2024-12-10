@@ -3,6 +3,9 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>EventsProcessor.Test</RootNamespace>
   </PropertyGroup>
+   <PropertyGroup>
+          <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+      </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

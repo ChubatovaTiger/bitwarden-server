@@ -3,7 +3,9 @@
   <PropertyGroup>
     <UserSecretsId>bitwarden-Notifications</UserSecretsId>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Notifications' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Notifications-SelfHost' " />
   <ItemGroup>

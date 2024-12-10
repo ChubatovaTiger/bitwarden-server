@@ -4,7 +4,9 @@
       <Nullable>enable</Nullable>
       <IsPackable>false</IsPackable>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

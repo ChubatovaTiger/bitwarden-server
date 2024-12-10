@@ -4,7 +4,9 @@
     <UserSecretsId>bitwarden-Events</UserSecretsId>
     <MvcRazorCompileOnPublish>false</MvcRazorCompileOnPublish>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Events' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Events-SelfHost' " />
   <ItemGroup>

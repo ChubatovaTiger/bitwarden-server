@@ -3,7 +3,9 @@
   <PropertyGroup>
     <UserSecretsId>bitwarden-Admin</UserSecretsId>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Admin' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Admin-SelfHost' " />
   <ItemGroup>

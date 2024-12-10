@@ -4,7 +4,9 @@
     <OutputType>Exe</OutputType>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Migrator\Migrator.csproj" />
   </ItemGroup>

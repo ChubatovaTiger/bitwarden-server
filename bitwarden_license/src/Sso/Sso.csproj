@@ -3,7 +3,9 @@
   <PropertyGroup>
     <UserSecretsId>bitwarden-Sso</UserSecretsId>
   </PropertyGroup>
-
+ <PropertyGroup>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Sso' " />
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Sso-SelfHost' " />
   <ItemGroup>
