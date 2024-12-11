@@ -17,5 +17,3 @@ Trademark Guidelines
 <https://github.com/bitwarden/server/blob/main/TRADEMARK_GUIDELINES.md>.
 n
 s
-g
-k
